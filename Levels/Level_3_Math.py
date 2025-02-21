@@ -4,7 +4,6 @@ import math
 
 pygame.init()
 
-
 WIDTH, HEIGHT = 500, 500
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption("Math Quiz")
@@ -129,11 +128,14 @@ def game_loop():
                         user_input += event.unicode  
 
             elif event.type == pygame.MOUSEBUTTONDOWN:  
-                if button_rect.collidepoint(event.pos):  
+                if button_rect.collidepoint(event.pos) and user_input.strip() != "":  
                     eqn, ans = get_new_question()  
                     user_input = ""  
                     message = ""  
                     answer_checked = False  
+                elif button_rect.collidepoint(event.pos) and user_input.strip() == "":  # If no input, show a message
+                    message = "Please enter a valid answer before proceeding."
+                    message_color = RED  
 
         pygame.display.flip()  
 
