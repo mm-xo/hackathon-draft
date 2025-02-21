@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 
 # Initialize Pygame
 pygame.init()

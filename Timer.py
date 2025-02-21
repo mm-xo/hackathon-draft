@@ -1,74 +1,70 @@
-import pygame
+import pygame # type: ignore
 import sys
-import time
-# Initialize Pygame
 
+class Timer:
+    def __init__(self, duration):
+        self.duration = duration  # Timer duration (in seconds)
+        self.time_left = duration  # Time left on the timer
+        self.last_decrease_time = 0  # Last time the timer decreased
+        self.screen_width = 800
+        self.screen_height = 600
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        pygame.display.set_caption("Countdown Timer")
+        self.white = (255, 255, 255)
+        self.red = (255, 0, 0)
+        self.black = (0, 0, 0)
+        self.corner_radius = 20
+        self.decrease_interval = 1000  # Decrease every 1000 milliseconds (1 second)
 
-class Timer():
+    def update(self):
+        """Update the timer and redraw the screen every frame."""
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-    def countdown(n):
-        pygame.init()
+        # Update the time left based on elapsed time
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_decrease_time >= self.decrease_interval and self.time_left > 0:
+            self.time_left -= 1
+            self.last_decrease_time = current_time  # Update the last decrease time
         
-        # Set up display
-        screen_width = 800
-        screen_height = 600
-        screen = pygame.display.set_mode((screen_width, screen_height))
-        pygame.display.set_caption("Health Bar Decreasing Every Second")
-        WHITE = (255, 255, 255)
-        RED = (255, 0, 0)
-        GREEN = (0, 255, 0)
-        BLACK = (0, 0, 0)
-        screen.fill(WHITE)
-        pygame.draw.rect(screen, BLACK, (screen_width/10, screen_height/20, screen_width*8/10, screen_height/10), border_radius=20)
-        # Colors
-       
+        # Clear the screen
+        self.screen.fill(self.white)
 
-        corner_radius = 20      # Radius for the curved edges
+        # Draw the timer background with curved edges
+        pygame.draw.rect(self.screen, self.black, (self.screen_width / 10, self.screen_height / 20, self.screen_width * 8 / 10, self.screen_height / 10), border_radius=self.corner_radius)
 
-        # Timer properties
-        decrease_interval = 1000  # Decrease health every 1000 milliseconds (1 second)
-        last_decrease_time = 0    # Track the last time health was decreased
-        
-        # Main game loop
-        running = True
-        clock = pygame.time.Clock()
-        factor=0
-        count=1
-        orignal_length = n
-        while running:
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            if(n>=0):
-                # Get the current time
-                current_time = pygame.time.get_ticks()
-                current_length = max(screen_width*8/10-factor, 0)
-                # Decrease health every second
-                if current_time - last_decrease_time >= decrease_interval:  # Decrease health by 1, but don't go below 0
-                    factor= count*(screen_width*8/10)/orignal_length
-                    last_decrease_time = current_time  # Update the last decrease time
-                    count=count+1
-                    n=n-1
-                
-                # Clear the screen
-                screen.fill(WHITE)
+        # Draw the current time (health) with curved edges
+        current_length = (self.screen_width * 8 / 10) * (self.time_left / self.duration)
+        if current_length > 0:
+            pygame.draw.rect(self.screen, self.red, (self.screen_width / 10, self.screen_height / 20, current_length, self.screen_height / 10), border_radius=self.corner_radius)
 
-                # Draw the health bar background with curved edges
-                pygame.draw.rect(screen, BLACK, (screen_width/10, screen_height/20, screen_width*8/10, screen_height/10), border_radius=corner_radius)
+        # Update the display
+        pygame.display.flip()
+
+    def is_time_up(self):
+        """Returns True if the time is up."""
+        return self.time_left <= 0
 
 
-                # Draw the current health with curved edges
-                if current_length > 0:
-                    pygame.draw.rect(screen, RED, (screen_width/10, screen_height/20, current_length, screen_height/10), border_radius=corner_radius)
+# Main function to run the timer
+def run_timer(duration):
+    pygame.init()
+    timer = Timer(duration)
 
-                # Update the display
-                pygame.display.flip()
-            
-            # Control the frame rate
+    while True:
+        timer.update()
+
+        if timer.is_time_up():
+            print("Time's up!")
+            break
+
+        pygame.time.Clock().tick(60)  # Frame rate control (60 FPS)
+    
     pygame.quit()
+    sys.exit()
 
-Timer.countdown(10)
-sys.exit()
-# Quit Pygame
-
+if __name__ == "__main__":
+    run_timer(30)  # Start timer with 10 seconds
