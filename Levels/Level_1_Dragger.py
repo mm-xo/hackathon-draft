@@ -183,8 +183,22 @@ class Level_1_Dragger:
 
             elapsed_time = pygame.time.get_ticks() - self.message_timer
             if elapsed_time < 2000:
-                message_text = self.font.render(self.messageCorrect or self.messageWrong, True, self.DARK_GREEN if self.messageCorrect else self.RED)
-                self.screen.blit(message_text, (self.SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
+                message = self.messageCorrect if self.messageCorrect else self.messageWrong
+                color = self.DARK_GREEN if self.messageCorrect else self.RED
+
+                if message:
+                    text_surface = self.font.render(message, True, color)
+                    x = self.SCREEN_WIDTH // 2 - text_surface.get_width() // 2
+                    y = 140  # Lowered position slightly
+
+                    # Create an outline effect by rendering the text multiple times in black
+                    outline_offsets = [(-2, -2), (-2, 2), (2, -2), (2, 2)]
+                    for ox, oy in outline_offsets:
+                        outline_surface = self.font.render(message, True, self.BLACK)
+                        self.screen.blit(outline_surface, (x + ox, y + oy))
+
+                    # Render the main text on top
+                    self.screen.blit(text_surface, (x, y))
 
             pygame.display.update()
 
