@@ -23,7 +23,7 @@ class Timer:
         if current_time - self.last_decrease_time >= self.decrease_interval and self.time_left > 0:
             self.time_left -= 1
             self.last_decrease_time = current_time  # Update last decrease time
-        screen.fill(self.white)
+        # screen.fill(self.white)
         # Draw the timer background with curved edges
         pygame.draw.rect(screen, self.black, (self.screen_width / 10, self.screen_height / 20, self.screen_width * 8 / 10, self.screen_height / 10), border_radius=self.corner_radius)
 
@@ -31,7 +31,7 @@ class Timer:
         current_length = (self.screen_width * 8 / 10) * (self.time_left / self.duration)
         if current_length > 0:
             pygame.draw.rect(screen, self.red, (self.screen_width / 10, self.screen_height / 20, current_length, self.screen_height / 10), border_radius=self.corner_radius)
-        pygame.display.flip()
+        # pygame.display.flip()
     # def update(self):
     #     """Update the timer and redraw the screen every frame."""
     #     # Handle events

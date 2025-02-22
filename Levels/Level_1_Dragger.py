@@ -1,5 +1,6 @@
 import pygame
 import sys
+from Timer import Timer  # Importing your given Timer class
 
 # Initialize pygame
 pygame.init()
@@ -125,6 +126,9 @@ room.add_object(ps)
 room.add_object(iPad)
 room.add_object(charger)
 
+# Initialize the Timer (5 seconds countdown for example)
+timer = Timer(30)  # Change the duration as needed
+
 # Main game loop
 running = True
 while running:
@@ -164,9 +168,15 @@ while running:
     # Draw everything
     room.draw()
     bag.draw()
+    timer.update(screen)  # Update and draw the timer
 
-    # Update the display
-    pygame.display.update()
+    pygame.display.update()  # Only update the screen once per frame
+
+    if timer.is_time_up():
+        print("Time's up!")
+        running = False
+
+    pygame.time.Clock().tick(60)  # Frame rate control (60 FPS)
 
 # Quit pygame
 pygame.quit()
