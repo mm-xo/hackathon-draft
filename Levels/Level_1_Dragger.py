@@ -18,10 +18,12 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (169, 169, 169)
 BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+DARK_GREEN = (0, 200, 0)  # Darker green for outline
 
 # Fonts
-font = pygame.font.SysFont("Arial", 20)
+font = pygame.font.SysFont("Arial", 40)
 
 # Bag position and dimensions
 BAG_X = 1000
@@ -31,6 +33,7 @@ BAG_HEIGHT = 150
 
 # Load sound effect for successful object drop
 success_sound = pygame.mixer.Sound("success.mp3")  # Make sure to provide the correct path to the sound file
+failure_sound = pygame.mixer.Sound("failure.mp3")  # Failure sound for non-eligible items
 
 # Define Object class
 class Object:
@@ -40,6 +43,7 @@ class Object:
         self.y = y
         self.image = image
         self.rect = self.image.get_rect(topleft=(x, y))
+        self.original_position = (x, y)  # Store the original position
         self.dragging = False
 
     def draw(self):
@@ -59,6 +63,11 @@ class Object:
 
     def stop_drag(self):
         self.dragging = False
+
+    def reset_position(self):
+        """Reset the object's position to its original position"""
+        self.x, self.y = self.original_position
+        self.rect.topleft = self.original_position
 
 # Define Bag class
 class Bag:
@@ -125,6 +134,16 @@ room.add_object(ps)
 room.add_object(iPad)
 room.add_object(charger)
 
+# Create lists for eligible and non-eligible items
+eligible_items = [laptop, lamp, iPad, charger]  # List of eligible items
+non_eligible_items = [ps]  # List of non-eligible items
+
+# Text message variables
+messageCorrect = ""
+message_timer = 0  # Timer for how long to show the message
+messageWrong = ""
+message_timer = 0  # Timer for how long to show the message
+
 # Main game loop
 running = True
 while running:
@@ -155,15 +174,43 @@ while running:
 
                     # Check if dropped inside the bag
                     if bag.rect.collidepoint(obj.x, obj.y):
-                        bag.add_item(obj)
-                        obj.image = pygame.Surface((0, 0))
-                        room.objects.remove(obj)  # Remove from room
-                        # Play the success sound
-                        success_sound.play()
-
+                        # Check if item is eligible
+                        if obj in eligible_items:
+                            bag.add_item(obj)
+                            obj.image = pygame.Surface((0, 0))  # Make object disappear from the screen
+                            room.objects.remove(obj)  # Remove from room
+                            # Play the success sound
+                            success_sound.play()
+                            messageCorrect = f"Yay!! {obj.name} added to bag"
+                            message_timer = pygame.time.get_ticks()  # Start the timer
+                        else:
+                            # Play the failure sound for non-eligible items
+                            failure_sound.play()
+                            messageWrong = f"Oops!! {obj.name} shouldn't be added to bag"
+                            message_timer = pygame.time.get_ticks()  # Start the timer
+                            obj.reset_position()
     # Draw everything
     room.draw()
     bag.draw()
+
+# Display the message if it's not empty and the timer is within time limit
+    if messageCorrect:
+        elapsed_time = pygame.time.get_ticks() - message_timer
+        if elapsed_time < 2000:  # Show the message for 2 seconds
+            # Render outline first
+            outline_text = font.render(messageCorrect, True, BLACK)
+            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2, 100))
+            message_text = font.render(messageCorrect, True, GREEN)
+            screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
+
+    if messageWrong:
+        elapsed_time = pygame.time.get_ticks() - message_timer
+        if elapsed_time < 2000:  # Show the message for 2 seconds
+            # Render outline first
+            outline_text = font.render(messageWrong, True, BLACK)
+            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2, 100))
+            message_text = font.render(messageWrong, True, RED)
+            screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
 
     # Update the display
     pygame.display.update()
