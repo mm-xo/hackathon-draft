@@ -92,9 +92,8 @@ class Room:
             obj.draw()
 
 # Load images for objects
-laptop_image = pygame.image.load("laptop.png") # image of an object
-laptop_image = pygame.transform.scale(laptop_image, (75, 50))
-
+laptop_image = pygame.Surface((75, 50)) # image of an object
+laptop_image.fill(WHITE)
 lamp_image = pygame.Surface((50, 50))  # Placeholder lamp
 lamp_image.fill(RED)
 
