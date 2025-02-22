@@ -6,8 +6,8 @@ class Timer:
         self.duration = duration  # Timer duration (in seconds)
         self.time_left = duration  # Time left on the timer
         self.last_decrease_time = 0  # Last time the timer decreased
-        self.screen_width = 800
-        self.screen_height = 600
+        self.screen_width = 1280
+        self.screen_height = 720
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         # pygame.display.set_caption("Countdown Timer")
         self.white = (255, 255, 255)
