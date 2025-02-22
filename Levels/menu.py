@@ -1,16 +1,17 @@
 import pygame
 from button import Button
 # import Level2
-from Level_1_Dragger import Level_1_Dragger
+import Level_1
 pygame.init()
+pygame.mixer.init()
 
-MENU_BG = pygame.image.load("blue_BG.png")
+MENU_BG = pygame.image.load("Images/blue_BG.png")
 
 WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 def get_font(size):
-    return pygame.font.Font("VCR_OSD_MONO_1.001.ttf", size)
+    return pygame.font.Font("Font/GameFont.ttf", size)
 
 def menu():
     pygame.display.set_caption("Menu")
@@ -38,8 +39,7 @@ def menu():
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    level_1 = Level_1_Dragger()
-                    level_1.run()
+                    Level_1.level1_start()
                     # Level_1_Dragger.levelStart()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()

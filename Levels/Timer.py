@@ -5,6 +5,7 @@ class Timer:
     def __init__(self, duration):
         self.duration = duration  # Timer duration (in seconds)
         self.time_left = duration  # Time left on the timer
+        self.is_stopped = False
         self.last_decrease_time = 0  # Last time the timer decreased
         self.screen_width = 1280
         self.screen_height = 720
@@ -17,6 +18,8 @@ class Timer:
         self.decrease_interval = 1000  # Decrease every 1000 milliseconds (1 second)
         
     def update(self, screen):
+        if self.is_stopped:
+            return
         """Update the timer and redraw it on the provided screen."""
         # Update the time left based on elapsed time
         current_time = pygame.time.get_ticks()
@@ -63,27 +66,26 @@ class Timer:
     def is_time_up(self):
         """Returns True if the time is up."""
         return self.time_left <= 0
+    def stop_timer(self):
+        self.is_stopped = True
 
 
 # Main function to run the timer
 def run_timer(duration,screen):
     pygame.init()
     timer = Timer(duration)
-
     running=True
     while running:
-        screen.fill((0, 0, 0))
         timer.update(screen)
-        pygame.display.flip()
         for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     running=False
         if timer.is_time_up():
             print("Time's up!")
             break
-        
+
         pygame.time.Clock().tick(60)  # Frame rate control (60 FPS)
-        
+    
     pygame.quit()
     sys.exit()
 
