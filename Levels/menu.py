@@ -4,7 +4,7 @@ from button import Button
 from Level_1_Dragger import Level_1_Dragger
 pygame.init()
 
-MENU_BG = pygame.image.load("Menu_BG.png")
+MENU_BG = pygame.image.load("summer_BG.png")
 
 WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -20,11 +20,11 @@ def menu():
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        MENU_TEXT = get_font(100).render("Don't Fail!", True, "#ffffff")
-        MENU_RECT = MENU_TEXT.get_rect(center=(400, 100))
+        MENU_TEXT = get_font(100).render("Don't Fail!", True, "#000000")
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 300))
 
-        PLAY_BUTTON = Button(pos=(400, 250), text_input="PLAY", font=get_font(75), base_color="#c42339", hovering_color="#dcdbdb")
-        QUIT_BUTTON = Button(pos=(400, 350), text_input="QUIT", font=get_font(75), base_color="#c42339", hovering_color="#dcdbdb")
+        PLAY_BUTTON = Button(pos=(640, 400), text_input="PLAY", font=get_font(75), base_color="#c42339", hovering_color="#dcdbdb")
+        QUIT_BUTTON = Button(pos=(640, 500), text_input="QUIT", font=get_font(75), base_color="#c42339", hovering_color="#dcdbdb")
 
         screen.blit(MENU_TEXT, MENU_RECT)
 
