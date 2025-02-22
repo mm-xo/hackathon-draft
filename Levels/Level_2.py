@@ -34,7 +34,7 @@ class Level_2:
     def level2_start(self):
         print("Starting Level 2")
         self.running = True
-        sukh = False
+        # sukh = False
         
         while self.running:
             self.handle_events()
