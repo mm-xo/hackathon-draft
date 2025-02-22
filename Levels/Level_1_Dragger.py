@@ -98,7 +98,7 @@ lamp_image = pygame.Surface((50, 50))  # Placeholder lamp
 lamp_image.fill(RED)
 
 # Create room and objects
-room = Room("bedroom2.png")  # background image of the room
+room = Room("Bedroom.png")  # background image of the room
 laptop = Object("Laptop", 300, 300, laptop_image)
 lamp = Object("Lamp", 500, 400, lamp_image)
 bag = Bag(BAG_X, BAG_Y, BAG_WIDTH, BAG_HEIGHT)
