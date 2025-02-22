@@ -7,6 +7,7 @@ class Level_1_Dragger:
         # Initialize pygame
         pygame.init()
         pygame.mixer.init()
+        self.gameWon = False
 
         # Screen dimensions
         self.SCREEN_WIDTH = 1280
@@ -147,6 +148,9 @@ class Level_1_Dragger:
         while self.running:
             self.screen.fill(self.WHITE)
             for event in pygame.event.get():
+                if len(self.bag.items) == 4 and self.timer.time_left > 0:
+                    self.running = False
+                    self.gameWon = True
                 if event.type == pygame.QUIT:
                     self.running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
