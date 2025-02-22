@@ -4,7 +4,7 @@ from button import Button
 from Level_1_Dragger import Level_1_Dragger
 pygame.init()
 
-MENU_BG = pygame.image.load("summer_BG.png")
+MENU_BG = pygame.image.load("blue_BG.png")
 
 WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
