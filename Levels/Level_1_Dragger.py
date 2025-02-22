@@ -1,222 +1,192 @@
 import pygame
 import sys
+from Timer import Timer
 
-# Initialize pygame
-pygame.init()
+class Level_1_Dragger:
+    def __init__(self):
+        # Initialize pygame
+        pygame.init()
+        pygame.mixer.init()
 
-# Initialize pygame mixer for sound
-pygame.mixer.init()
+        # Screen dimensions
+        self.SCREEN_WIDTH = 1280
+        self.SCREEN_HEIGHT = 720
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        pygame.display.set_caption("Room Explorer Game")
 
-# Screen dimensions
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Room Explorer Game")
+        # Colors
+        self.WHITE = (255, 255, 255)
+        self.BLACK = (0, 0, 0)
+        self.GRAY = (169, 169, 169)
+        self.BLUE = (0, 0, 255)
+        self.GREEN = (0, 255, 0)
+        self.RED = (255, 0, 0)
+        self.DARK_GREEN = (0, 200, 0)
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (169, 169, 169)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-DARK_GREEN = (0, 200, 0)  # Darker green for outline
+        # Fonts
+        self.font = pygame.font.SysFont("Arial", 40, bold=True)
 
-# Fonts
-font = pygame.font.SysFont("Arial", 40, bold=True)
+        # Load sounds
+        self.success_sound = pygame.mixer.Sound("success.mp3")
+        self.failure_sound = pygame.mixer.Sound("failure.mp3")
 
-# Bag position and dimensions
-BAG_X = 1000
-BAG_Y = 500
-BAG_WIDTH = 200
-BAG_HEIGHT = 150
+        # Bag position and dimensions
+        self.BAG_X = 1000
+        self.BAG_Y = 500
+        self.BAG_WIDTH = 200
+        self.BAG_HEIGHT = 150
 
-# Load sound effect for successful object drop
-success_sound = pygame.mixer.Sound("success.mp3")  # Make sure to provide the correct path to the sound file
-failure_sound = pygame.mixer.Sound("failure.mp3")  # Failure sound for non-eligible items
+        # Create room and objects
+        self.room = self.Room("Bedroom.png")  # Background image of the room
+        self.bag = self.Bag(self.BAG_X, self.BAG_Y, self.BAG_WIDTH, self.BAG_HEIGHT)
 
-# Define Object class
-class Object:
-    def __init__(self, name, x, y, image):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.image = image
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.original_position = (x, y)  # Store the original position
-        self.dragging = False
+        # Load object images
+        laptop_image = pygame.Surface((75, 50))
+        laptop_image.fill(self.WHITE)
+        lamp_image = pygame.Surface((50, 50))
+        lamp_image.fill(self.RED)
+        iPad_image = pygame.Surface((25, 40))
+        iPad_image.fill(self.BLUE)
+        charger_image = pygame.Surface((15, 15))
+        charger_image.fill(self.BLACK)
+        ps_image = pygame.Surface((30, 60))
+        ps_image.fill(self.GRAY)
 
-    def draw(self):
-        screen.blit(self.image, (self.x, self.y))
+        # Create objects
+        self.laptop = self.Object("Laptop", 300, 300, laptop_image)
+        self.lamp = self.Object("Lamp", 500, 400, lamp_image)
+        self.iPad = self.Object("iPad", 125, 250, iPad_image)
+        self.charger = self.Object("Charger", 250, 500, charger_image)
+        self.ps = self.Object("PlayStation", 600, 400, ps_image)
 
-    def start_drag(self, mouse_x, mouse_y):
-        if self.rect.collidepoint(mouse_x, mouse_y):
-            self.dragging = True
-            self.offset_x = mouse_x - self.x
-            self.offset_y = mouse_y - self.y
+        # Add objects to room
+        self.room.add_object(self.laptop)
+        self.room.add_object(self.lamp)
+        self.room.add_object(self.ps)
+        self.room.add_object(self.iPad)
+        self.room.add_object(self.charger)
 
-    def drag(self, mouse_x, mouse_y):
-        if self.dragging:
-            self.x = mouse_x - self.offset_x
-            self.y = mouse_y - self.offset_y
-            self.rect.topleft = (self.x, self.y)
+        # Define eligible and non-eligible items
+        self.eligible_items = [self.laptop, self.lamp, self.iPad, self.charger]
+        self.non_eligible_items = [self.ps]
 
-    def stop_drag(self):
-        self.dragging = False
+        # Text message variables
+        self.messageCorrect = ""
+        self.messageWrong = ""
+        self.message_timer = 0  # Timer for message display duration
 
-    def reset_position(self):
-        """Reset the object's position to its original position"""
-        self.x, self.y = self.original_position
-        self.rect.topleft = self.original_position
+        # Timer and game loop control
+        self.timer = Timer(20)
+        self.running = True
 
-# Define Bag class
-class Bag:
-    def __init__(self, x, y, width, height):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.items = []
+    class Object:
+        def __init__(self, name, x, y, image):
+            self.name = name
+            self.x = x
+            self.y = y
+            self.image = image
+            self.rect = self.image.get_rect(topleft=(x, y))
+            self.original_position = (x, y)
+            self.dragging = False
 
-    def draw(self):
-        pygame.draw.rect(screen, BLUE, self.rect, 2)
-        text = font.render("Bag", True, BLACK)
-        screen.blit(text, (self.rect.x + 10, self.rect.y + 5))
+        def draw(self, screen):
+            screen.blit(self.image, (self.x, self.y))
 
-        # Display items inside the bag
-        for i, item in enumerate(self.items):
-            item_x = self.rect.x + 10 + (i % 5) * 40  # Adjust item positions inside the bag
-            item_y = self.rect.y + 30 + (i // 5) * 40
-            screen.blit(item.image, (item_x, item_y))
+        def start_drag(self, mouse_x, mouse_y):
+            if self.rect.collidepoint(mouse_x, mouse_y):
+                self.dragging = True
+                self.offset_x = mouse_x - self.x
+                self.offset_y = mouse_y - self.y
 
-    def add_item(self, obj):
-        """Store an object in the bag and remove it from the room."""
-        if obj not in self.items:
-            self.items.append(obj)
+        def drag(self, mouse_x, mouse_y):
+            if self.dragging:
+                self.x = mouse_x - self.offset_x
+                self.y = mouse_y - self.offset_y
+                self.rect.topleft = (self.x, self.y)
 
-# Define Room class
-class Room:
-    def __init__(self, background_image):
-        self.background_image = pygame.image.load(background_image)
-        self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.objects = []
+        def stop_drag(self):
+            self.dragging = False
 
-    def add_object(self, obj):
-        self.objects.append(obj)
+        def reset_position(self):
+            self.x, self.y = self.original_position
+            self.rect.topleft = self.original_position
 
-    def draw(self):
-        screen.blit(self.background_image, (0, 0))
-        for obj in self.objects:
-            obj.draw()
+    class Bag:
+        def __init__(self, x, y, width, height):
+            self.rect = pygame.Rect(x, y, width, height)
+            self.items = []
 
-# Load images for objects
-laptop_image = pygame.Surface((75, 50)) # image of an object
-laptop_image.fill(WHITE)
-lamp_image = pygame.Surface((50, 50))  # Placeholder lamp
-lamp_image.fill(RED)
-iPad_image = pygame.Surface((25, 40)) # image of an object
-iPad_image.fill(BLUE)
-charger_image = pygame.Surface((15, 15))  # Placeholder lamp
-charger_image.fill(BLACK)
-ps_image = pygame.Surface((30, 60))  # Placeholder lamp
-ps_image.fill(GRAY)
+        def draw(self, screen, font):
+            pygame.draw.rect(screen, (0, 0, 255), self.rect, 2)
+            text = font.render("Bag", True, (0, 0, 0))
+            screen.blit(text, (self.rect.x + 10, self.rect.y + 5))
+            for i, item in enumerate(self.items):
+                item_x = self.rect.x + 10 + (i % 5) * 40
+                item_y = self.rect.y + 30 + (i // 5) * 40
+                screen.blit(item.image, (item_x, item_y))
 
-# Create room and objects
-room = Room("Bedroom.png")  # background image of the room
-laptop = Object("Laptop", 300, 300, laptop_image)
-lamp = Object("Lamp", 500, 400, lamp_image)
-iPad = Object("iPad", 125, 250, iPad_image)
-charger = Object("Charger", 250, 500, charger_image)
-ps = Object("PlayStation", 600, 400, ps_image)
-bag = Bag(BAG_X, BAG_Y, BAG_WIDTH, BAG_HEIGHT)
+        def add_item(self, obj):
+            if obj not in self.items:
+                self.items.append(obj)
 
-# Add objects to room
-room.add_object(laptop)
-room.add_object(lamp)
-room.add_object(ps)
-room.add_object(iPad)
-room.add_object(charger)
+    class Room:
+        def __init__(self, background_image):
+            self.background_image = pygame.image.load(background_image)
+            self.background_image = pygame.transform.scale(self.background_image, (1280, 720))
+            self.objects = []
 
-# Create lists for eligible and non-eligible items
-eligible_items = [laptop, lamp, iPad, charger]  # List of eligible items
-non_eligible_items = [ps]  # List of non-eligible items
+        def add_object(self, obj):
+            self.objects.append(obj)
 
-# Text message variables
-messageCorrect = ""
-message_timer = 0  # Timer for how long to show the message
-messageWrong = ""
-message_timer = 0  # Timer for how long to show the message
+        def draw(self, screen):
+            screen.blit(self.background_image, (0, 0))
+            for obj in self.objects:
+                obj.draw(screen)
 
-# Main game loop
-running = True
-while running:
-    screen.fill(WHITE)
+    def run(self):
+        while self.running:
+            self.screen.fill(self.WHITE)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for obj in self.room.objects:
+                        obj.start_drag(mouse_x, mouse_y)
+                if event.type == pygame.MOUSEMOTION:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for obj in self.room.objects:
+                        obj.drag(mouse_x, mouse_y)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for obj in self.room.objects[:]:
+                        if obj.dragging:
+                            obj.stop_drag()
+                            if self.bag.rect.collidepoint(obj.x, obj.y):
+                                if obj in self.eligible_items:
+                                    self.bag.add_item(obj)
+                                    obj.image = pygame.Surface((0, 0))
+                                    self.room.objects.remove(obj)
+                                    self.success_sound.play()
+                                    self.messageCorrect = f"Yay!! {obj.name} added to bag"
+                                    self.messageWrong = ""
+                                    self.message_timer = pygame.time.get_ticks()
+                                else:
+                                    self.failure_sound.play()
+                                    self.messageWrong = f"Oops!! {obj.name} shouldn't be added"
+                                    self.messageCorrect = ""
+                                    self.message_timer = pygame.time.get_ticks()
+                                    obj.reset_position()
 
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+            self.room.draw(self.screen)
+            self.bag.draw(self.screen, self.font)
+            self.timer.update(self.screen)
 
-        # Start dragging an object
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            for obj in room.objects:
-                obj.start_drag(mouse_x, mouse_y)
+            elapsed_time = pygame.time.get_ticks() - self.message_timer
+            if elapsed_time < 2000:
+                message_text = self.font.render(self.messageCorrect or self.messageWrong, True, self.DARK_GREEN if self.messageCorrect else self.RED)
+                self.screen.blit(message_text, (self.SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
 
-        # Dragging an object
-        if event.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            for obj in room.objects:
-                obj.drag(mouse_x, mouse_y)
+            pygame.display.update()
 
-        # Drop object into bag
-        if event.type == pygame.MOUSEBUTTONUP:
-            for obj in room.objects[:]:  # Iterate over a copy to avoid issues while removing items
-                if obj.dragging:
-                    obj.stop_drag()
-
-                    # Check if dropped inside the bag
-                    if bag.rect.collidepoint(obj.x, obj.y):
-                        # Check if item is eligible
-                        if obj in eligible_items:
-                            bag.add_item(obj)
-                            obj.image = pygame.Surface((0, 0))  # Make object disappear from the screen
-                            room.objects.remove(obj)  # Remove from room
-                            # Play the success sound
-                            success_sound.play()
-                            messageCorrect = f"Yay!! {obj.name} added to bag"
-                            messageWrong = ""
-                            message_timer = pygame.time.get_ticks()  # Start the timer
-                        else:
-                            # Play the failure sound for non-eligible items
-                            failure_sound.play()
-                            messageWrong = f"Oops!! {obj.name} shouldn't be added to bag"
-                            messageCorrect = ""
-                            message_timer = pygame.time.get_ticks()  # Start the timer
-                            obj.reset_position()
-    # Draw everything
-    room.draw()
-    bag.draw()
-
-# Display the message if it's not empty and the timer is within time limit
-    if messageCorrect:
-        elapsed_time = pygame.time.get_ticks() - message_timer
-        if elapsed_time < 2000:  # Show the message for 2 seconds
-            # Render outline first
-            outline_text = font.render(messageCorrect, True, BLACK)
-            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2 + 2, 100 + 2))
-            message_text = font.render(messageCorrect, True, DARK_GREEN)
-            screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
-
-    if messageWrong:
-        elapsed_time = pygame.time.get_ticks() - message_timer
-        if elapsed_time < 2000:  # Show the message for 2 seconds
-            # Render outline first
-            outline_text = font.render(messageWrong, True, BLACK)
-            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2 + 2, 100 + 2))
-            message_text = font.render(messageWrong, True, RED)
-            screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
-
-    # Update the display
-    pygame.display.update()
-
-# Quit pygame
-pygame.quit()
-sys.exit()
+        pygame.quit()
+        sys.exit()
