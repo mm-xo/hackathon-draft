@@ -39,7 +39,7 @@ class Level_2:
         while self.running:
             self.handle_events()
             # self.update()
-            sukh = self.update()
+            # sukh = self.update()
             self.draw()
             pygame.display.update()
         
