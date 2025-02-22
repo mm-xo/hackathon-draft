@@ -2,7 +2,6 @@ import pygame
 # import sys
 from Timer import Timer
 
-
 pygame.init()
 pygame.mixer.init()
 
@@ -26,12 +25,12 @@ class Bag:
             self.items.append(obj)
 
 class DraggableObject:
-    def __init__(self, name, x, y, image_path):
+    def __init__(self, name, x, y, image_path, size=(100, 100)):  # Default size (100, 100)
         self.name = name
         self.x = x
         self.y = y
         self.image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.image = pygame.transform.scale(self.image, size)  # Apply size change
         self.rect = self.image.get_rect(topleft=(x, y))
         self.dragging = False
         self.offset_x = 0
@@ -77,6 +76,11 @@ def add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound, time
         timer.time_left = max(0, timer.time_left - 5)
         return "", f"Oops!! {obj.name} shouldn't be added"
 
+def draw_text(screen, text, x, y, font, color=(255, 255, 255)):
+    """Draws text centered at (x, y)."""
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, (x - text_surface.get_width() // 2, y))
+
 def level1_start():
     pygame.init()
     pygame.mixer.init()
@@ -87,7 +91,7 @@ def level1_start():
 
     success_sound = pygame.mixer.Sound("Sound/success.wav")
     failure_sound = pygame.mixer.Sound("Sound/failure.wav")
-    level_completed =pygame.mixer.Sound("Sound/level_completed.wav")
+    level_completed = pygame.mixer.Sound("Sound/level_completed.wav")
     timer = Timer(20)
 
     room_bg = pygame.image.load("Images/bedroom_bg.png")
@@ -96,29 +100,33 @@ def level1_start():
     bag = Bag(1000, 500, 200, 200, "Images/bag.png")
 
     # Define objects
-    obj1 = DraggableObject("Books", 250, 350, "Images/books.png")
-    obj2 = DraggableObject("Laptop", 950, 500, "Images/laptop.png")
-    obj3 = DraggableObject("Bottle", 550, 550, "Images/bottle.png")
-    #obj4 = DraggableObject("Elon", 800, 500, "Images/elon.png")
-    obj5 = DraggableObject("Socks", 500, 650, "Images/socks.png")
-    obj6 = DraggableObject("PlayStation", 100, 600, "Images/ps.png")
-    obj7 = DraggableObject("Charger", 850, 670, "Images/charger.png")
+    obj1 = DraggableObject("Books", 205, 280, "Images/books.png", size=(150, 150))
+    obj2 = DraggableObject("Laptop", 800, 350, "Images/laptop.png", size=(200, 200))  # Increased size
+
+    obj3 = DraggableObject("Bottle", 550, 550, "Images/bottle.png", size=(100, 100))
+    obj5 = DraggableObject("Socks", 500, 500, "Images/socks.png", size=(100, 100))
+    obj6 = DraggableObject("PlayStation", 100, 600, "Images/ps.png", size=(150, 150))
+    obj7 = DraggableObject("Charger", 220, 450, "Images/charger.png", size=(80, 80))
     objects = [obj1, obj2, obj3, obj5, obj6, obj7]
 
-    eligible_items = [obj1, obj2, obj3, obj7]  # Only book and pencil should be added
+    eligible_items = [obj1, obj2, obj3, obj7]  # Only book, laptop, bottle, charger should be added
 
     messageCorrect, messageWrong = "", ""
     message_timer = 0
     running = True
     awake_time = None
-    
+
     while running:
         screen.fill((255, 255, 255))
+        
+        # Draw the title text at the top center
+
+
         for event in pygame.event.get():
             if len(bag.items) == 4 and timer.time_left > 0:
                 running = False
                 bag.gameWon = True
-            if (timer.is_time_up()):
+            if timer.is_time_up():
                 running = False
             if event.type == pygame.QUIT:
                 running = False
@@ -137,19 +145,16 @@ def level1_start():
                             message_timer = pygame.time.get_ticks()
 
         draw_room(screen, room_bg, objects)
+        draw_text(screen, "Drag and Drop objects in bag", SCREEN_WIDTH // 2, 110, font, (0, 0, 0))
         bag.draw(screen, font)
         timer.update(screen)
-        
-
-        # x,y = pygame.mouse.get_pos()
-        # print(x, y)
 
         if pygame.time.get_ticks() - message_timer < 2000:
             message = messageCorrect if messageCorrect else messageWrong
             if message:
                 text_surface = font.render(message, True, (0, 200, 0) if messageCorrect else (255, 0, 0))
                 screen.blit(text_surface, (SCREEN_WIDTH // 2 - text_surface.get_width() // 2, 140))
-        
+
         pygame.display.update()
 
         if len(bag.items) == len(eligible_items):
@@ -159,5 +164,4 @@ def level1_start():
                 awake_time = pygame.time.get_ticks()
                 return True
         if awake_time is not None and pygame.time.get_ticks() - awake_time >= 3000:
-            # running = False
             return True

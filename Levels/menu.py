@@ -24,6 +24,9 @@ def menu():
         screen.blit(MENU_BG, (0,0))
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
+        x = MENU_MOUSE_POS[0]
+        y = MENU_MOUSE_POS[1]
+        print(x,y)
 
         MENU_TEXT = get_font(100).render("Don't Fail!", True, "#000000")
         MENU_RECT = MENU_TEXT.get_rect(center=(640, 300))
