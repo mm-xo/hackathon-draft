@@ -90,4 +90,4 @@ def level2_start():
 
         if awake_time is not None and pygame.time.get_ticks() - awake_time >= 3000:
             running = False
-            level3_start()
+            level3_start() #call level 3 on win

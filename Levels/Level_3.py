@@ -1,6 +1,6 @@
 import pygame
 import random
-import math
+# import math
 from Timer import Timer
 from Level_4 import level_4_integer
 from lost import you_lost_screen
