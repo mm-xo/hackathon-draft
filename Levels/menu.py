@@ -1,6 +1,7 @@
 import pygame
 from button import Button
 import Level2
+import Level_1_Dragger
 pygame.init()
 
 MENU_BG = pygame.image.load("Menu_BG.png")
@@ -37,7 +38,7 @@ def menu():
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    Level2.levelStart()
+                    Level_1_Dragger.levelStart()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     exit()

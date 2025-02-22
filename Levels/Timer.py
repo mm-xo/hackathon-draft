@@ -69,18 +69,21 @@ class Timer:
 def run_timer(duration,screen):
     pygame.init()
     timer = Timer(duration)
+
     running=True
     while running:
+        screen.fill((0, 0, 0))
         timer.update(screen)
+        pygame.display.flip()
         for event in pygame.event.get():
                 if event.type == pygame.QUIT: 
                     running=False
         if timer.is_time_up():
             print("Time's up!")
             break
-
+        
         pygame.time.Clock().tick(60)  # Frame rate control (60 FPS)
-    
+        
     pygame.quit()
     sys.exit()
 

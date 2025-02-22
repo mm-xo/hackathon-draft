@@ -1,5 +1,6 @@
 import pygame
 import sys
+from Timer import Timer
 
 class Level_1_Dragger:
     def __init__(self):
@@ -137,82 +138,55 @@ class Level_1_Dragger:
         def add_object(self, obj):
             self.objects.append(obj)
 
-    def draw(self):
-        screen.blit(self.background_image, (0, 0))
-        for obj in self.objects:
-            obj.draw()
+        def draw(self, screen):
+            screen.blit(self.background_image, (0, 0))
+            for obj in self.objects:
+                obj.draw(screen)
 
-# Load images for objects
-laptop_image = pygame.Surface((75, 50)) # image of an object
-laptop_image.fill(WHITE)
-lamp_image = pygame.Surface((50, 50))  # Placeholder lamp
-lamp_image.fill(RED)
-iPad_image = pygame.Surface((25, 40)) # image of an object
-iPad_image.fill(BLUE)
-charger_image = pygame.Surface((15, 15))  # Placeholder lamp
-charger_image.fill(BLACK)
-ps_image = pygame.Surface((30, 60))  # Placeholder lamp
-ps_image.fill(GRAY)
+    def run(self):
+        while self.running:
+            self.screen.fill(self.WHITE)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for obj in self.room.objects:
+                        obj.start_drag(mouse_x, mouse_y)
+                if event.type == pygame.MOUSEMOTION:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for obj in self.room.objects:
+                        obj.drag(mouse_x, mouse_y)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for obj in self.room.objects[:]:
+                        if obj.dragging:
+                            obj.stop_drag()
+                            if self.bag.rect.collidepoint(obj.x, obj.y):
+                                if obj in self.eligible_items:
+                                    self.bag.add_item(obj)
+                                    obj.image = pygame.Surface((0, 0))
+                                    self.room.objects.remove(obj)
+                                    self.success_sound.play()
+                                    self.messageCorrect = f"Yay!! {obj.name} added to bag"
+                                    self.messageWrong = ""
+                                    self.message_timer = pygame.time.get_ticks()
+                                else:
+                                    self.failure_sound.play()
+                                    self.messageWrong = f"Oops!! {obj.name} shouldn't be added"
+                                    self.messageCorrect = ""
+                                    self.message_timer = pygame.time.get_ticks()
+                                    obj.reset_position()
 
-# Create room and objects
-room = Room("Bedroom.png")  # background image of the room
-laptop = Object("Laptop", 300, 300, laptop_image)
-lamp = Object("Lamp", 500, 400, lamp_image)
-iPad = Object("iPad", 125, 250, iPad_image)
-charger = Object("Charger", 250, 500, charger_image)
-ps = Object("ps", 600, 400, ps_image)
-bag = Bag(BAG_X, BAG_Y, BAG_WIDTH, BAG_HEIGHT)
+            self.room.draw(self.screen)
+            self.bag.draw(self.screen, self.font)
+            self.timer.update(self.screen)
 
-# Add objects to room
-room.add_object(laptop)
-room.add_object(lamp)
-room.add_object(ps)
-room.add_object(iPad)
-room.add_object(charger)
+            elapsed_time = pygame.time.get_ticks() - self.message_timer
+            if elapsed_time < 2000:
+                message_text = self.font.render(self.messageCorrect or self.messageWrong, True, self.DARK_GREEN if self.messageCorrect else self.RED)
+                self.screen.blit(message_text, (self.SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
 
-# Main game loop
-running = True
-while running:
-    screen.fill(WHITE)
+            pygame.display.update()
 
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        # Start dragging an object
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            for obj in room.objects:
-                obj.start_drag(mouse_x, mouse_y)
-
-        # Dragging an object
-        if event.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            for obj in room.objects:
-                obj.drag(mouse_x, mouse_y)
-
-        # Drop object into bag
-        if event.type == pygame.MOUSEBUTTONUP:
-            for obj in room.objects[:]:  # Iterate over a copy to avoid issues while removing items
-                if obj.dragging:
-                    obj.stop_drag()
-
-                    # Check if dropped inside the bag
-                    if bag.rect.collidepoint(obj.x, obj.y):
-                        bag.add_item(obj)
-                        obj.image = pygame.Surface((0, 0))
-                        room.objects.remove(obj)  # Remove from room
-                        # Play the success sound
-                        success_sound.play()
-
-    # Draw everything
-    room.draw()
-    bag.draw()
-
-    # Update the display
-    pygame.display.update()
-
-# Quit pygame
-pygame.quit()
-sys.exit()
+        pygame.quit()
+        sys.exit()
