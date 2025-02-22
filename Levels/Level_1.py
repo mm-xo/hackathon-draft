@@ -11,6 +11,7 @@ class Bag:
         self.rect = pygame.Rect(x, y, width, height)
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (width, height))
+        self.gameWon = False
         self.items = []
 
     def draw(self, screen, font):
@@ -63,7 +64,7 @@ def draw_room(screen, background_image, objects):
     for obj in objects:
         obj.draw(screen)
 
-def add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound):
+def add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound, timer):
     if obj in eligible_items:
         bag.add_item(obj)
         obj.image = pygame.Surface((0, 0))
@@ -72,6 +73,8 @@ def add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound):
     else:
         failure_sound.play()
         obj.reset_position()
+        # Reduce time by 5 seconds if a non-eligible item is added
+        timer.time_left = max(0, timer.time_left - 5)
         return "", f"Oops!! {obj.name} shouldn't be added"
 
 def level1_start():
@@ -106,12 +109,15 @@ def level1_start():
 
     messageCorrect, messageWrong = "", ""
     message_timer = 0
-
     running = True
     awake_time = None
+    
     while running:
         screen.fill((255, 255, 255))
         for event in pygame.event.get():
+            if len(bag.items) == 4 and timer.time_left > 0:
+                    running = False
+                    bag.gameWon = True
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -125,7 +131,7 @@ def level1_start():
                     if obj.dragging:
                         obj.stop_drag()
                         if bag.rect.collidepoint(obj.x, obj.y):
-                            messageCorrect, messageWrong = add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound)
+                            messageCorrect, messageWrong = add_item_to_bag(obj, bag, eligible_items, success_sound, failure_sound, timer)
                             message_timer = pygame.time.get_ticks()
 
         draw_room(screen, room_bg, objects)
