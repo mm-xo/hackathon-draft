@@ -1,0 +1,15 @@
+# macOS system files
+.DS_Store
+
+# Byte-compiled / cached files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# Pygame-related cache
+*.log
