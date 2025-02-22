@@ -1,159 +1,141 @@
 import pygame
 import random
-# import math
 from Timer import Timer
-from Level_4 import level_4_integer
-from lost import you_lost_screen
-#from menu import menu
+# from Level_4 import level_4_integer
+
 
 pygame.init()
 pygame.mixer.init()
 
-WIDTH, HEIGHT = 1280, 720
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-pygame.display.set_caption("Level 3")
+class Level_3:
+    WIDTH, HEIGHT = 1280, 720
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 200, 0)
+    RED = (200, 0, 0)
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-GRAY = (200, 200, 200)
-GREEN = (0, 200, 0)
-RED = (200, 0, 0)
+    def __init__(self, screen):
+        self.screen = screen
+        self.running = False
+        self.font = pygame.font.Font("Font/GameFont.ttf", 40)
+        self.level_completed = pygame.mixer.Sound("Sound/level_completed.wav")
 
-font = pygame.font.Font("Font/GameFont.ttf", 40)
-level_completed = pygame.mixer.Sound("Sound/level_completed.wav")
+        self.questions_wrong = 0
+        self.questions_answered = 0
+        self.user_input = ""
+        self.message = ""
+        self.message_color = self.BLACK
+        self.message_time = 0
+        self.message_duration = 500  # milliseconds
 
-def display_text(text, color, y_pos):
-    rendered_text = font.render(text, True, color)
-    text_rect = rendered_text.get_rect(center=(WIDTH // 2, y_pos))  # Center the text horizontally
-    screen.blit(rendered_text, text_rect)
+        self.timer = Timer(10)
+        self.eqn, self.ans = self.get_new_question()
+        self.answer_checked = False
 
-def subtraction():
-    a, b = random.randint(1, 10), random.randint(1, 10)
-    return f"{a} - {b} =", a - b
+    def display_text(self, text, color, y_pos):
+        """Helper method to render text on the screen."""
+        rendered_text = self.font.render(text, True, color)
+        text_rect = rendered_text.get_rect(center=(self.WIDTH // 2, y_pos))
+        self.screen.blit(rendered_text, text_rect)
 
-def addition():
-    a, b = random.randint(1, 10), random.randint(1, 10)
-    return f"{a} + {b} =", a + b
+    def get_new_question(self):
+        """Randomly generates a new math question."""
+        choice = random.randint(1, 4)
+        a, b = random.randint(1, 10), random.randint(1, 10)
+        if choice == 1:
+            return f"{a} - {b} =", a - b
+        elif choice == 2:
+            return f"{a} + {b} =", a + b
+        elif choice == 3:
+            return f"{a} * {b} =", a * b
+        else:
+            a = random.randint(1, 5)
+            return f"{a}^2 =", a**2
 
-def multiplication():
-    a, b = random.randint(1, 10), random.randint(1, 10)
-    return f"{a} * {b} =", a * b
+    def level3_start(self):
+        """Starts Level 3."""
+        print("Starting Level 3")
+        self.running = True
 
-def square():
-    a = random.randint(1, 5)
-    return f"{a}^2 =", a**2
+        while self.running:
+            self.screen.fill(self.WHITE)
+            self.timer.update(self.screen)
 
-def get_new_question():
-    choice = random.randint(1, 4)
-    if choice == 1:
-        return subtraction()
-    elif choice == 2:
-        return addition()
-    elif choice == 3:
-        return multiplication()
-    elif choice == 4:
-        return square()
+            self.display_text(self.eqn, self.BLACK, self.HEIGHT // 3)
+            self.display_text("Your Answer: " + self.user_input, self.BLACK, self.HEIGHT // 2)
 
-def level3_start():
-    time = None
-    questions_wrong = 0
-    questions_asnwered = 0
-    running = True
-    user_input = ""
-    eqn, ans = get_new_question()  
-    message = ""  
-    message_color = BLACK  
-    answer_checked = False  
-    message_time = 0  # Track when the message is shown
-    message_duration = 500  # Time duration for the message (in milliseconds)
-    timer = Timer(10)
+            if self.message:
+                self.display_text(self.message, self.message_color, self.HEIGHT // 1.5)
 
-    while running:
-        timer.update(screen)
-        screen.fill((0, 0, 0))
+            self.handle_events()
 
-        screen.fill(WHITE)
-        display_text(eqn, BLACK, HEIGHT // 3)  # Display the question text (centered)
-        display_text("Your Answer: " + user_input, BLACK, HEIGHT // 2)  # Display the user input (centered)
+            if self.questions_wrong == 3:
+                print("Too many wrong answers! Returning to menu.")
+                self.running = False
+                return
 
-        if message:  # Display the message only if it exists
-            display_text(message, message_color, HEIGHT // 1.5)  # Display message (centered)
+            if self.timer.is_time_up():
+                accuracy = (self.questions_answered / (self.questions_answered + self.questions_wrong)) * 100 if (self.questions_answered + self.questions_wrong) > 0 else 0
+                if accuracy >= 50:
+                    print("You passed Level 3! Moving to Level 4.")
+                    self.level_completed.play()
+                    # level_4_integer.run()
+                    return True
+                else:
+                    print("You lost Level 3! Returning to menu.")
+                self.running = False
+                return
 
+            if pygame.time.get_ticks() - self.message_time > self.message_duration and self.answer_checked:
+                self.message = ""
+                self.eqn, self.ans = self.get_new_question()
+                self.user_input = ""
+                self.answer_checked = False
+
+            pygame.display.update()
+
+        pygame.quit()  
+
+    def handle_events(self):
+        """Handles all user inputs."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                self.running = False
+                pygame.quit()
+                return
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and not answer_checked:  
-                    try:
-                        user_answer = float(user_input.strip())
-                        if isinstance(ans, list):  
-                            if user_answer in ans:
-                                message = "Correct!"
-                                questions_asnwered+=1
-                                message_color = GREEN
-                                message_time = pygame.time.get_ticks()  # Set the message time
-                                answer_checked = True  # Set answer as checked
-                            else:
-                                message = "Wrong!"
-                                questions_wrong += 1
-                                message_color = RED
-                                message_time = pygame.time.get_ticks()  # Set the message time
-                                answer_checked = True  # Set answer as checked
-                        else:
-                            if user_answer == ans:
-                                message = "Correct!"
-                                questions_asnwered+=1
-                                message_color = GREEN
-                                message_time = pygame.time.get_ticks()  # Set the message time
-                                answer_checked = True  # Set answer as checked
-                            else:
-                                message = "Wrong!"
-                                questions_wrong += 1
-                                message_color = RED
-                                message_time = pygame.time.get_ticks()  # Set the message time
-                                answer_checked = True  # Set answer as checked
-                    except ValueError:
-                        message = "Invalid input!"
-                        message_color = RED
-                        message_time = pygame.time.get_ticks()  # Set the message time
-                        answer_checked = True  # Set answer as checked
-
+                if event.key == pygame.K_RETURN and not self.answer_checked:
+                    self.check_answer()
                 elif event.key == pygame.K_BACKSPACE:
-                    user_input = user_input[:-1]
+                    self.user_input = self.user_input[:-1]
                 else:
-                    if event.unicode.isdigit() or event.unicode in "-.":
-                        if event.unicode == "." and "." in user_input:
-                            continue  
-                        if event.unicode == "-" and len(user_input) > 0:
-                            continue  
-                        user_input += event.unicode
+                    self.process_input(event)
 
-        timer.update(screen)
-        pygame.display.update()
-        if (questions_wrong == 3):
-            #you_lost_screen(menu)
-            return
-        
-        if (timer.is_time_up()):
-            if (questions_asnwered>0 and (questions_asnwered // (questions_asnwered + questions_wrong))*100 >= 50):
-                #level4_start()
-                #print("You got over 50%")
-                level_completed.play()
-                level_4_integer.run()
-                running = False
-                return
+    def check_answer(self):
+        """Checks if the user's input is correct."""
+        try:
+            user_answer = float(self.user_input.strip())
+            if user_answer == self.ans:
+                self.message = "Correct!"
+                self.questions_answered += 1
+                self.message_color = self.GREEN
             else:
-                #print("You lost")
+                self.message = "Wrong!"
+                self.questions_wrong += 1
+                self.message_color = self.RED
+        except ValueError:
+            self.message = "Invalid input!"
+            self.message_color = self.RED
+
+        self.message_time = pygame.time.get_ticks()
+        self.answer_checked = True  
+
+    def process_input(self, event):
+        """Handles numerical input."""
+        if event.unicode.isdigit() or event.unicode in "-.":
+            if event.unicode == "." and "." in self.user_input:
                 return
-        # If enough time has passed since the message was shown, clear it and show the next question
-        if pygame.time.get_ticks() - message_time > message_duration and answer_checked:
-            message = ""  # Clear the message
-            eqn, ans = get_new_question()  # Get the next question
-            user_input = ""  # Clear user input
-            answer_checked = False  # Allow for a new answer to be checked
-
-        pygame.display.flip()  
-
-    pygame.quit()  # Properly close the Pygame window after the loop ends
+            if event.unicode == "-" and len(self.user_input) > 0:
+                return
+            self.user_input += event.unicode

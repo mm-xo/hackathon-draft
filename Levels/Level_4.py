@@ -87,7 +87,7 @@ class Level_4():
 
         # **SECOND SCREEN (User Input)**
         running2 = True
-        timer2 = Timer(20)  # Timer starts
+        timer2 = Timer(10)  # Timer starts
         user_input = ""
         message = ""  # Message to display (Correct/Incorrect)
         message_color = level.WHITE  # Default text color
@@ -121,6 +121,7 @@ class Level_4():
                                 message_color = level.GREEN
                                 answer_checked = True  # Mark answer as checked
                                 timer_running = False  # Stop the timer
+                                return True
                             else:
                                 message = "Incorrect! Try again."
                                 message_color = level.RED
@@ -147,7 +148,7 @@ class Level_4():
         pygame.quit()
         sys.exit()
 
-level_4_integer = Level_4()
+# level_4_integer = Level_4()
 
 
     

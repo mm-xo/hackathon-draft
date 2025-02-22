@@ -1,7 +1,7 @@
 import pygame
 import sys
 from Timer import Timer
-from Level_2 import level2_start
+
 
 pygame.init()
 pygame.mixer.init()
@@ -116,8 +116,10 @@ def level1_start():
         screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if len(bag.items) == 4 and timer.time_left > 0:
-                    running = False
-                    bag.gameWon = True
+                running = False
+                bag.gameWon = True
+            if (timer.is_time_up()):
+                running = False
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -155,6 +157,7 @@ def level1_start():
                 timer.stop_timer()
                 level_completed.play()
                 awake_time = pygame.time.get_ticks()
+                return True
         if awake_time is not None and pygame.time.get_ticks() - awake_time >= 3000:
-            running = False
-            level2_start()
+            # running = False
+            return True
