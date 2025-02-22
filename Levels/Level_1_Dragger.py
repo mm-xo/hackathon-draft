@@ -4,6 +4,9 @@ import sys
 # Initialize pygame
 pygame.init()
 
+# Initialize pygame mixer for sound
+pygame.mixer.init()
+
 # Screen dimensions
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -25,6 +28,9 @@ BAG_X = 1000
 BAG_Y = 500
 BAG_WIDTH = 200
 BAG_HEIGHT = 150
+
+# Load sound effect for successful object drop
+success_sound = pygame.mixer.Sound("success.mp3")  # Make sure to provide the correct path to the sound file
 
 # Define Object class
 class Object:
@@ -96,16 +102,28 @@ laptop_image = pygame.Surface((75, 50)) # image of an object
 laptop_image.fill(WHITE)
 lamp_image = pygame.Surface((50, 50))  # Placeholder lamp
 lamp_image.fill(RED)
+iPad_image = pygame.Surface((25, 40)) # image of an object
+iPad_image.fill(BLUE)
+charger_image = pygame.Surface((15, 15))  # Placeholder lamp
+charger_image.fill(BLACK)
+ps_image = pygame.Surface((30, 60))  # Placeholder lamp
+ps_image.fill(GRAY)
 
 # Create room and objects
 room = Room("Bedroom.png")  # background image of the room
 laptop = Object("Laptop", 300, 300, laptop_image)
 lamp = Object("Lamp", 500, 400, lamp_image)
+iPad = Object("iPad", 125, 250, iPad_image)
+charger = Object("Charger", 250, 500, charger_image)
+ps = Object("ps", 600, 400, ps_image)
 bag = Bag(BAG_X, BAG_Y, BAG_WIDTH, BAG_HEIGHT)
 
 # Add objects to room
 room.add_object(laptop)
 room.add_object(lamp)
+room.add_object(ps)
+room.add_object(iPad)
+room.add_object(charger)
 
 # Main game loop
 running = True
@@ -140,6 +158,8 @@ while running:
                         bag.add_item(obj)
                         obj.image = pygame.Surface((0, 0))
                         room.objects.remove(obj)  # Remove from room
+                        # Play the success sound
+                        success_sound.play()
 
     # Draw everything
     room.draw()
