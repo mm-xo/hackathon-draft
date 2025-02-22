@@ -23,7 +23,7 @@ RED = (255, 0, 0)
 DARK_GREEN = (0, 200, 0)  # Darker green for outline
 
 # Fonts
-font = pygame.font.SysFont("Arial", 40)
+font = pygame.font.SysFont("Arial", 40, bold=True)
 
 # Bag position and dimensions
 BAG_X = 1000
@@ -124,7 +124,7 @@ laptop = Object("Laptop", 300, 300, laptop_image)
 lamp = Object("Lamp", 500, 400, lamp_image)
 iPad = Object("iPad", 125, 250, iPad_image)
 charger = Object("Charger", 250, 500, charger_image)
-ps = Object("ps", 600, 400, ps_image)
+ps = Object("PlayStation", 600, 400, ps_image)
 bag = Bag(BAG_X, BAG_Y, BAG_WIDTH, BAG_HEIGHT)
 
 # Add objects to room
@@ -182,11 +182,13 @@ while running:
                             # Play the success sound
                             success_sound.play()
                             messageCorrect = f"Yay!! {obj.name} added to bag"
+                            messageWrong = ""
                             message_timer = pygame.time.get_ticks()  # Start the timer
                         else:
                             # Play the failure sound for non-eligible items
                             failure_sound.play()
                             messageWrong = f"Oops!! {obj.name} shouldn't be added to bag"
+                            messageCorrect = ""
                             message_timer = pygame.time.get_ticks()  # Start the timer
                             obj.reset_position()
     # Draw everything
@@ -199,8 +201,8 @@ while running:
         if elapsed_time < 2000:  # Show the message for 2 seconds
             # Render outline first
             outline_text = font.render(messageCorrect, True, BLACK)
-            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2, 100))
-            message_text = font.render(messageCorrect, True, GREEN)
+            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2 + 2, 100 + 2))
+            message_text = font.render(messageCorrect, True, DARK_GREEN)
             screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
 
     if messageWrong:
@@ -208,7 +210,7 @@ while running:
         if elapsed_time < 2000:  # Show the message for 2 seconds
             # Render outline first
             outline_text = font.render(messageWrong, True, BLACK)
-            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2, 100))
+            screen.blit(outline_text, (SCREEN_WIDTH // 2 - outline_text.get_width() // 2 + 2, 100 + 2))
             message_text = font.render(messageWrong, True, RED)
             screen.blit(message_text, (SCREEN_WIDTH // 2 - message_text.get_width() // 2, 100))
 
